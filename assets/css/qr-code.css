@@ -1,0 +1,79 @@
+/* 1. IMPORT FONT: Importing 'Outfit' weights 400 and 700 */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+
+/* 2. VARIABLES: Defining colors from style-guide.md */
+:root {
+  --white: hsl(0, 0%, 100%);
+  --slate-300: hsl(212, 45%, 89%);
+  --slate-500: hsl(216, 15%, 48%);
+  --slate-900: hsl(218, 44%, 22%);
+}
+
+/* 3. GENERAL RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 4. BODY LAYOUT: Centers the card on the screen */
+body {
+  font-family: 'Outfit', sans-serif; /* Specified in style guide */
+  background-color: var(--slate-300); /* Specified in style guide */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 5. CARD COMPONENT */
+.card {
+  background-color: var(--white);
+  width: 320px; /* Standard width for this component */
+  padding: 16px; /* Spacing around the inner edge */
+  border-radius: 20px; /* Rounded corners */
+  text-align: center;
+  box-shadow: 0px 25px 25px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+  margin-bottom: 40px; /* Spacing away from attribution footer */
+}
+
+/* 6. IMAGE STYLING */
+.qr-image {
+  width: 100%; /* Spans full width of the card padding */
+  border-radius: 10px; /* Rounded corners on the image itself */
+  display: block;
+}
+
+/* 7. TEXT STYLING */
+.text-content {
+  padding: 24px 16px; /* Spacing around text */
+}
+
+h1 {
+  color: var(--slate-900);
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--slate-500);
+  font-weight: 400;
+  font-size: 15px; /* Specified in style guide */
+  line-height: 1.4;
+}
+
+/* 8. FOOTER STYLING */
+.attribution { 
+  font-size: 11px; 
+  text-align: center; 
+  color: var(--slate-900);
+}
+
+.attribution a { 
+  color: #3e52a3;
+  font-weight: 700;
+  text-decoration: none;
+}

@@ -1,0 +1,118 @@
+/* 1. IMPORT FONT */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+
+/* 2. VARIABLES */
+:root {
+  --white: hsl(0, 0%, 100%);
+  --slate-300: hsl(212, 45%, 89%);
+  --slate-500: hsl(216, 15%, 48%);
+  --slate-900: hsl(218, 44%, 22%);
+}
+
+/* 3. RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 4. BODY LAYOUT */
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--slate-300);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px; /* Padding ensures content doesn't touch edges on mobile */
+}
+
+/* 5. GRID CONTAINER (UL) */
+.qr-grid {
+  display: grid;
+  list-style: none; /* Removes bullet points */
+  gap: 30px;
+  width: 100%;
+  max-width: 1400px;
+  
+  /* Centers the entire grid block on the screen */
+  justify-content: center;
+  
+  /* Forces exactly 3 columns of 320px each. 
+     This prevents card stretching and text reflow. */
+  grid-template-columns: repeat(3, 320px);
+}
+
+/* 6. ORPHAN CENTERING TRICK */
+/* This forces the 4th card into the middle column (Column 2) */
+.card:last-child {
+  grid-column: 2;
+}
+
+/* 7. RESPONSIVE REQUIREMENT (< 1000px) */
+@media (max-width: 1000px) {
+  .qr-grid {
+    /* Switch to a Single Column Layout */
+    grid-template-columns: 320px;
+  }
+  
+  /* Reset the orphan card behavior */
+  .card:last-child {
+    /* We must set this back to 'auto' so it flows naturally 
+       to the bottom of the single column stack */
+    grid-column: auto;
+  }
+}
+
+/* 8. CARD STYLING */
+.card {
+  background-color: var(--white);
+  padding: 16px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0px 25px 25px rgba(0, 0, 0, 0.05);
+  
+  /* Fixed width to prevent internal content shifting */
+  width: 320px; 
+}
+
+/* 9. CONTENT STYLING */
+.qr-image {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+
+.text-content {
+  padding: 24px 16px;
+}
+
+h1 {
+  color: var(--slate-900);
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--slate-500);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* 10. FOOTER STYLING */
+.attribution { 
+  margin-top: 40px;
+  font-size: 11px; 
+  text-align: center; 
+  color: var(--slate-900);
+}
+
+.attribution a { 
+  color: #3e52a3;
+  font-weight: 700;
+  text-decoration: none;
+}
