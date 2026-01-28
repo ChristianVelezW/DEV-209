@@ -26,7 +26,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     text-align: center;
-    max-width: 600px;
+    max-width: 650px; /* Increased from 600px to give 8x8 more room */
     width: 95%;
 }
 
@@ -163,4 +163,24 @@ button:hover {
 @media (max-width: 500px) {
     :root { --card-size: 60px; }
     .grid-container { gap: 10px; }
+}
+
+/* Footer Attribution Styles */
+.attribution {
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.attribution a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.attribution a:hover {
+    text-decoration: underline;
 }

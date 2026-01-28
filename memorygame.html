@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game</title>
-    <link rel="stylesheet" href="assets\css\memorygame.css">
+    <link rel="stylesheet" href="assets/css/memorygame.css">
 </head>
 <body>
 
@@ -14,7 +14,13 @@
     <div class="controls">
         <select id="grid-size">
             <option value="4">Easy (4x4)</option>
-            <option value="6">Hard (6x6)</option>
+            <option value="6">Medium (6x6)</option>
+            <option value="8">Hard (8x8)</option>
+        </select>
+        <select id="theme-select">
+            <option value="origami">Origami</option>
+            <option value="pokemon">Pokemon</option>
+            <option value="food">Food</option>
         </select>
         <button id="restart-btn">New Game</button>
     </div>
@@ -37,7 +43,18 @@
     </div>
 </div>
 
-<script src="assets\js\memorygame.js"></script>
+<div class="attribution">
+    Icons made by 
+    <a href="https://www.freepik.com" title="Freepik">Freepik</a>, 
+    <a href="https://www.flaticon.com/authors/roundicons-freebies" title="Roundicons Freebies">Roundicons Freebies</a>, 
+    and 
+    <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> 
+    from 
+    <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+</div>
+
+
+<script src="assets/js/memorygame.js"></script>
 
 </body>
 </html>
