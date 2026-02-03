@@ -10,7 +10,6 @@ const state = {
     gameActive: false
 };
 
-// We need 32 pairs for 8x8 (64 cards). 
 const themes = {
     origami: [
         '001-cat.png', '002-crab.png', '003-rabbit.png', 
@@ -54,44 +53,170 @@ const themes = {
 };
 
 // Default theme 
-let currentTheme = 'origami'
+let currentTheme = 'origami';
 
-// Function to get the full paths for the game
-const getThemeImages = (themeName) => {
-    const basePath = `assets/memorygame/themes/${themeName}/`;
-    const files = themes[themeName];
-
-    // Return the full array
-    return files.map(fileName => basePath + fileName);
-};
-
+// DOM Elements
 const boardEl = document.getElementById('game-board');
 const movesEl = document.getElementById('moves');
 const timerEl = document.getElementById('timer');
 const restartBtn = document.getElementById('restart-btn');
 const gridSizeSelect = document.getElementById('grid-size');
+const themeSelect = document.getElementById('theme-select');
 const modalEl = document.getElementById('game-over-modal');
 const finalMovesEl = document.getElementById('final-moves');
 const finalTimeEl = document.getElementById('final-time');
+const modalRestartBtn = document.getElementById('modal-restart-btn');
+const globalMovesEl = document.getElementById('global-moves');
+
+// Helper: Get Theme Images
+const getThemeImages = (themeName) => {
+    const basePath = `assets/memorygame/themes/${themeName}/`;
+    const files = themes[themeName];
+    if (!files) return [];
+    return files.map(fileName => basePath + fileName);
+};
+
+// --- STORAGE LOGIC ---
+
+// 1. Session Storage (For F5 Refresh - Tab Specific)
+const saveSessionState = () => {
+    // We map the cards to simple objects (we can't save the DOM elements directly)
+    const cardsData = state.cards.map(c => ({
+        id: c.id,
+        value: c.value, // This is the image path
+        matched: c.matched,
+        flipped: c.element.classList.contains('flipped')
+    }));
+
+    const sessionData = {
+        gridSize: state.gridSize,
+        currentTheme: currentTheme,
+        moves: state.moves,
+        timer: state.timer,
+        matchedPairs: state.matchedPairs,
+        cards: cardsData,
+        gameActive: state.gameActive
+    };
+    
+    sessionStorage.setItem('memoryGameState', JSON.stringify(sessionData));
+};
+
+const clearSessionState = () => {
+    sessionStorage.removeItem('memoryGameState');
+};
+
+// 2. Local Storage (For Global Moves - Cross Tab)
+const updateGlobalMoves = () => {
+    let global = parseInt(localStorage.getItem('memoryGlobalMoves') || '0');
+    global++;
+    localStorage.setItem('memoryGlobalMoves', global);
+    globalMovesEl.textContent = global;
+};
+
+const initGlobalMoves = () => {
+    globalMovesEl.textContent = localStorage.getItem('memoryGlobalMoves') || '0';
+};
+
+// Listen for updates from other tabs
+window.addEventListener('storage', (e) => {
+    if (e.key === 'memoryGlobalMoves') {
+        globalMovesEl.textContent = e.newValue;
+    }
+});
+
+// --- GAME LOGIC ---
+
+const startNewGame = () => {
+    // When manually starting new game, we clear the saved session
+    clearSessionState();
+    initGame();
+};
 
 const initGame = () => {
     clearInterval(state.timerInterval);
-    state.gridSize = parseInt(gridSizeSelect.value);
-    state.flippedCards = [];
-    state.matchedPairs = 0;
-    state.moves = 0;
-    state.timer = 0;
-    state.isLocked = false;
-    state.gameActive = true;
-
-    movesEl.textContent = state.moves;
-    timerEl.textContent = "00:00";
     modalEl.style.display = 'none';
-    
-    // Dynamic Grid Styling
+    initGlobalMoves();
+
+    // CHECK: Is there saved data in SessionStorage?
+    const savedState = sessionStorage.getItem('memoryGameState');
+
+    if (savedState) {
+        // --- RESTORE MODE ---
+        const data = JSON.parse(savedState);
+        
+        // Restore variables
+        state.gridSize = data.gridSize;
+        currentTheme = data.currentTheme;
+        state.moves = data.moves;
+        state.timer = data.timer;
+        state.matchedPairs = data.matchedPairs;
+        state.gameActive = data.gameActive;
+        state.flippedCards = [];
+        state.isLocked = false;
+
+        // Restore UI
+        movesEl.textContent = state.moves;
+        gridSizeSelect.value = state.gridSize;
+        if(themeSelect) themeSelect.value = currentTheme;
+        updateTimerDisplay();
+
+        // Restore Grid Layout
+        adjustGridCSS();
+
+        // Rebuild Board from saved card data
+        boardEl.innerHTML = '';
+        state.cards = data.cards.map((savedCard) => {
+            const cardEl = createCardElement(savedCard.value, savedCard.id);
+            
+            // Re-apply classes
+            if (savedCard.flipped || savedCard.matched) {
+                cardEl.classList.add('flipped');
+            }
+            if (savedCard.matched) {
+                cardEl.classList.add('matched');
+            }
+            
+            boardEl.appendChild(cardEl);
+
+            return { 
+                id: savedCard.id, 
+                value: savedCard.value, 
+                element: cardEl, 
+                matched: savedCard.matched 
+            };
+        });
+
+        // If user refreshed while cards were flipped but not matched, add them to logic array
+        state.cards.forEach(card => {
+            if (card.element.classList.contains('flipped') && !card.matched) {
+                state.flippedCards.push(card);
+            }
+        });
+
+    } else {
+        // --- NEW GAME MODE ---
+        state.gridSize = parseInt(gridSizeSelect.value);
+        state.flippedCards = [];
+        state.matchedPairs = 0;
+        state.moves = 0;
+        state.timer = 0;
+        state.isLocked = false;
+        state.gameActive = true;
+        currentTheme = themeSelect ? themeSelect.value : 'origami';
+
+        movesEl.textContent = state.moves;
+        timerEl.textContent = "00:00";
+        
+        adjustGridCSS();
+        generateCards();
+    }
+
+    startTimer();
+};
+
+const adjustGridCSS = () => {
     boardEl.style.gridTemplateColumns = `repeat(${state.gridSize}, var(--card-size))`;
     
-    // Resize cards for Hard Mode (8x8) so they fit on screen
     if (state.gridSize === 8) {
         document.documentElement.style.setProperty('--card-size', '50px');
         document.documentElement.style.setProperty('--gap-size', '8px');
@@ -102,33 +227,31 @@ const initGame = () => {
         document.documentElement.style.setProperty('--card-size', '80px');
         document.documentElement.style.setProperty('--gap-size', '15px');
     }
+};
 
-    generateCards();
-    startTimer();
+const updateTimerDisplay = () => {
+    const minutes = Math.floor(state.timer / 60).toString().padStart(2, '0');
+    const seconds = (state.timer % 60).toString().padStart(2, '0');
+    timerEl.textContent = `${minutes}:${seconds}`;
 };
 
 const startTimer = () => {
     state.timerInterval = setInterval(() => {
         state.timer++;
-        const minutes = Math.floor(state.timer / 60).toString().padStart(2, '0');
-        const seconds = (state.timer % 60).toString().padStart(2, '0');
-        timerEl.textContent = `${minutes}:${seconds}`;
+        updateTimerDisplay();
+        // Save state on every second (so timer persists on refresh)
+        saveSessionState();
     }, 1000);
 };
 
 const generateCards = () => {
-
-    // Get the list of images for the current theme
     const themeImages = getThemeImages(currentTheme);
-
     const totalCards = state.gridSize * state.gridSize;
     const totalPairs = totalCards / 2;
     
-    // Slice exactly the number of emojis we need
     const gameSymbols = themeImages.slice(0, totalPairs);
     const cardValues = [...gameSymbols, ...gameSymbols];
 
-    // Fisher-Yates Shuffle
     for (let i = cardValues.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [cardValues[i], cardValues[j]] = [cardValues[j], cardValues[i]];
@@ -140,6 +263,8 @@ const generateCards = () => {
         boardEl.appendChild(card);
         return { id: index, value: val, element: card, matched: false };
     });
+
+    saveSessionState(); // Save initial layout
 };
 
 const createCardElement = (imagePath, index) => {
@@ -151,7 +276,8 @@ const createCardElement = (imagePath, index) => {
         <div class="card-inner">
             <div class="card-front"></div>
             <div class="card-back">
-                <img src="${imagePath}" alt="card" style="width: 80%; height: 80%; object-fit: contain;"></div>
+                <img src="${imagePath}" alt="card" style="width: 80%; height: 80%; object-fit: contain;">
+            </div>
         </div>
     `;
     
@@ -168,10 +294,17 @@ const handleCardClick = (index) => {
 
     flipCard(clickedCard);
     state.flippedCards.push(clickedCard);
+    
+    // Save state immediately after flip
+    saveSessionState();
 
     if (state.flippedCards.length === 2) {
         state.moves++;
         movesEl.textContent = state.moves;
+        
+        // Update Global Moves (Local Storage)
+        updateGlobalMoves();
+        
         checkForMatch();
     }
 };
@@ -197,6 +330,9 @@ const checkForMatch = () => {
         state.matchedPairs++;
         state.flippedCards = [];
         state.isLocked = false;
+        
+        // Save state after match
+        saveSessionState();
 
         if (state.matchedPairs === (state.gridSize * state.gridSize) / 2) {
             gameOver();
@@ -207,6 +343,9 @@ const checkForMatch = () => {
             unflipCard(card2);
             state.flippedCards = [];
             state.isLocked = false;
+            
+            // Save state after un-flip
+            saveSessionState();
         }, 1000);
     }
 };
@@ -216,19 +355,29 @@ const gameOver = () => {
     state.gameActive = false;
     finalMovesEl.textContent = state.moves;
     finalTimeEl.textContent = timerEl.textContent;
+    
+    // Clear the specific game session so F5 starts fresh after a win
+    clearSessionState();
+    
     setTimeout(() => {
         modalEl.style.display = 'flex';
     }, 500);
 };
 
-restartBtn.addEventListener('click', initGame);
-gridSizeSelect.addEventListener('change', initGame);
+// Event Listeners
+restartBtn.addEventListener('click', startNewGame);
 
-const themeSelect = document.getElementById('theme-select');
+// Add listener to the modal button if it exists
+if (modalRestartBtn) {
+    modalRestartBtn.addEventListener('click', startNewGame);
+}
+
+gridSizeSelect.addEventListener('change', startNewGame);
+
 if (themeSelect) {
     themeSelect.addEventListener('change', (e) => {
         currentTheme = e.target.value;
-        initGame();
+        startNewGame();
     });
 }
 

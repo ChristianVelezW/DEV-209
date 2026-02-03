@@ -30,8 +30,13 @@
         <div>Time: <span id="timer">00:00</span></div>
     </div>
 
+    <div class="stats" style="margin-top: -15px; font-size: 0.9rem; color: #666;">
+        <div>Global Moves (All Tabs): <span id="global-moves">0</span></div>
+    </div>
+
     <div class="grid-container" id="game-board">
-        </div>
+    </div>
+    
 </div>
 
 <div class="modal" id="game-over-modal">
@@ -39,7 +44,7 @@
         <h2>Game Over!</h2>
         <p>You finished in <span id="final-moves">0</span> moves.</p>
         <p>Time: <span id="final-time">00:00</span></p>
-        <button onclick="initGame()">Play Again</button>
+        <button id="modal-restart-btn">Play Again</button>
     </div>
 </div>
 
