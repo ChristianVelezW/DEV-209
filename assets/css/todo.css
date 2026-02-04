@@ -135,3 +135,7 @@ ul {
 .todo-actions button:hover {
     background-color: #5a6268;
 }
+
+#todo-desc {
+    resize: vertical; /* Allows height resizing, but LOCKS width */
+}
