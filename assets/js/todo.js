@@ -64,16 +64,20 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, options);
-        
-        // --- FIX: Handle 204 No Content success explicitly ---
-        if (response.status === 204 || (response.status === 200 && method === 'DELETE')) {
-            return { success: true };
-        }
 
         if (!response.ok) {
-            const error = await response.json();
+
+            if (response.status === 401) {
+                return null;
+            }
+
+            const error = await response.json().catch(() => ({ message: 'Action failed' }));
             alert(error.message || 'Action failed');
             return null;
+        }
+        
+        if (response.status === 204 || (response.status === 200 && method === 'DELETE')) {
+            return { success: true };
         }
 
         return await response.json();
@@ -123,6 +127,8 @@ document.getElementById('login-form').onsubmit = async (e) => {
         }
         setCookie('authToken', data.token);
         checkAuth();
+    } else {
+        alert("Invalid login credentials");
     }
 };
 
