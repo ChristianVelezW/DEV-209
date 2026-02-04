@@ -58,6 +58,11 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
         alert(error.message || 'Action failed');
         return null;
     }
+
+    if (response.status === 204) {
+        return { success: true };
+    }
+
     return response.json();
 }
 
@@ -133,11 +138,11 @@ async function loadTodos() {
             li.innerHTML = `
                 <span><strong>${todo.title}</strong>: ${todo.description}</span>
                 <div class="todo-actions">
-                    <button onclick="updateTodo('${todo._id}', ${!todo.completed})">
+                    <button onclick="updateTodo('${todo.id}', ${!todo.completed})">
                         ${todo.completed ? 'Undo' : 'Complete'}
                     </button>
-                    <button onclick="editTodo('${todo._id}', '${todo.title}', '${todo.description}')">Edit</button>
-                    <button onclick="deleteTodo('${todo._id}')">Delete</button>
+                    <button onclick="editTodo('${todo.id}', '${todo.title}', '${todo.description}')">Edit</button>
+                    <button onclick="deleteTodo('${todo.id}')">Delete</button>
                 </div>
             `;
             list.appendChild(li);
@@ -147,23 +152,27 @@ async function loadTodos() {
 
 // Delete Todo
 window.deleteTodo = async (id) => {
-    await apiRequest(`/todos/${id}`, 'DELETE');
-    loadTodos();
+    console.log("Deleting item:", id);
+    const result = await apiRequest(`/todos/${id}`, 'DELETE');
+    
+    if (result) {
+        console.log("Server confirmed deletion. Refreshing UI...");
+        await loadTodos(); // This re-draws the list from the server
+    }
 };
 
 // Toggle Complete
 window.updateTodo = async (id, status) => {
-    await apiRequest(`/todos/${id}`, 'PUT', { completed: status });
-    loadTodos();
+    const result = await apiRequest(`/todos/${id}`, 'PUT', { completed: status });
+    if (result) await loadTodos();
 };
 
-// Edit (Simple prompt-based edit)
 window.editTodo = async (id, oldTitle, oldDesc) => {
     const title = prompt("New Title:", oldTitle);
     const description = prompt("New Description:", oldDesc);
     if (title !== null) {
-        await apiRequest(`/todos/${id}`, 'PUT', { title, description });
-        loadTodos();
+        const result = await apiRequest(`/todos/${id}`, 'PUT', { title, description });
+        if (result) await loadTodos();
     }
 };
 
