@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:3000';
+let currentTodos = [];  // Store todos globally
 
 // --- Cookie Helpers ---
 function setCookie(name, value, days = 1) {
@@ -154,10 +155,12 @@ document.getElementById('todo-form').onsubmit = async (e) => {
 // Load/Render Todos
 async function loadTodos() {
     const todos = await apiRequest('/todos');
+    currentTodos = todos;   // Save to global variable
+
     const list = document.getElementById('todo-list');
     list.innerHTML = '';
     
-    if (todos) {
+    if (todos && Array.isArray(todos)) {
         todos.forEach(todo => {
             const li = document.createElement('li');
             li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
@@ -167,7 +170,7 @@ async function loadTodos() {
                     <button onclick="updateTodo('${todo.id}', ${!todo.completed})">
                         ${todo.completed ? 'Undo' : 'Complete'}
                     </button>
-                    <button onclick="editTodo('${todo.id}', '${todo.title}', '${todo.description}')">Edit</button>
+                    <button onclick="editTodo('${todo.id}')">Edit</button>
                     <button onclick="deleteTodo('${todo.id}')">Delete</button>
                 </div>
             `;
@@ -193,9 +196,14 @@ window.updateTodo = async (id, status) => {
     if (result) await loadTodos();
 };
 
-window.editTodo = async (id, oldTitle, oldDesc) => {
-    const title = prompt("New Title:", oldTitle);
+// Edit Todo
+window.editTodo = async (id) => {
+    const todo = currentTodos.find(t => t.id === id);
+    if (!todo) return;
+
+    const title = prompt("New Title:", todo.title);
     const description = prompt("New Description:", oldDesc);
+    
     if (title !== null) {
         const result = await apiRequest(`/todos/${id}`, 'PUT', { title, description });
         if (result) await loadTodos();
