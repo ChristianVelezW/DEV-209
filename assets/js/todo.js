@@ -24,13 +24,22 @@ function deleteCookie(name) {
 // --- UI Toggling ---
 function checkAuth() {
     const token = getCookie('authToken');
+    const authSection = document.getElementById('auth-container');
+    const todoSection = document.getElementById('todo-container');
+
     if (token) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('todo-container').style.display = 'block';
+        authSection.style.display = 'none';
+        todoSection.style.display = 'block';
         loadTodos();
     } else {
-        document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('todo-container').style.display = 'none';
+        authSection.style.display = 'block';
+        todoSection.style.display = 'none';
+        
+        // Reset inputs whenever the Auth screen is shown
+        document.getElementById('login-password').value = '';
+        if (!localStorage.getItem('rememberedEmail')) {
+            document.getElementById('login-email').value = '';
+        }
     }
 }
 
