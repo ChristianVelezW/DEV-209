@@ -40,6 +40,32 @@ textarea:focus {
     border-color: #007bff;
 }
 
+.checkbox-label {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* --- Toggle Links --- */
+.toggle-text {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    color: #666;
+}
+
+.toggle-text a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.toggle-text a:hover {
+    text-decoration: underline;
+}
+
 /* --- Buttons --- */
 button {
     padding: 12px;

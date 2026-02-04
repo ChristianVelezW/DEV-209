@@ -10,21 +10,29 @@
 
     <div class="container">
         <section id="auth-container">
-            <form id="register-form">
-                <h2>Register</h2>
-                <input type="email" id="reg-email" placeholder="Email" required>
-                <input type="password" id="reg-password" placeholder="Password" required>
-                <button type="submit">Create Account</button>
-            </form>
-            <hr>
             <form id="login-form">
                 <h2>Login</h2>
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Password" required>
-                <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <label class="checkbox-label">
                     <input type="checkbox" id="remember-me"> Remember my email
                 </label>
                 <button type="submit">Login</button>
+
+                <p class="toggle-text">
+                    Don't have an account? <a href="#" id="show-register">Register</a>
+                </p>
+            </form>
+
+            <form id="register-form" style="display: none;">
+                <h2>Register</h2>
+                <input type="email" id="reg-email" placeholder="Email" required>
+                <input type="password" id="reg-password" placeholder="Password" required>
+                <button type="submit">Create Account</button>
+
+                <p class="toggle-text">
+                    Already have an account? <a href="#" id="show-login">Login</a>
+                </p>
             </form>
         </section>
 

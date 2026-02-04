@@ -83,6 +83,19 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
     }
 }
 
+// --- Auth Toggles (Switch between Login/Register) ---
+document.getElementById('show-register').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'flex';
+};
+
+document.getElementById('show-login').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'flex';
+};
+
 // --- Event Listeners ---
 
 // Register
