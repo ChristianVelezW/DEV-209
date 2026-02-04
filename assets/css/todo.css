@@ -58,7 +58,7 @@ button:hover {
 
 #logout-btn {
     background-color: #dc3545;
-    align-self: flex-end; /* Keeps it tucked away */
+    padding: 8px 15px;
 }
 
 #logout-btn:hover {

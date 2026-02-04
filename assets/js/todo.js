@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000'; // Change this to your backend port
+const API_URL = 'http://localhost:3000';
 
 // --- Cookie Helpers ---
 function setCookie(name, value, days = 1) {
@@ -34,11 +34,21 @@ function checkAuth() {
     } else {
         authSection.style.display = 'block';
         todoSection.style.display = 'none';
+
+        // --- RESTORE EMAIL LOGIC ---
+        const savedEmail = localStorage.getItem('rememberedEmail');
+        const emailInput = document.getElementById('login-email');
+        const rememberCheckbox = document.getElementById('remember-me');
         
-        // Reset inputs whenever the Auth screen is shown
+        // Always clear password security
         document.getElementById('login-password').value = '';
-        if (!localStorage.getItem('rememberedEmail')) {
-            document.getElementById('login-email').value = '';
+
+        if (savedEmail) {
+            emailInput.value = savedEmail;
+            if(rememberCheckbox) rememberCheckbox.checked = true;
+        } else {
+            emailInput.value = '';
+            if(rememberCheckbox) rememberCheckbox.checked = false;
         }
     }
 }
@@ -52,18 +62,25 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
     const options = { method, headers };
     if (body) options.body = JSON.stringify(body);
 
-    const response = await fetch(`${API_URL}${endpoint}`, options);
-    if (!response.ok) {
-        const error = await response.json();
-        alert(error.message || 'Action failed');
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, options);
+        
+        // --- FIX: Handle 204 No Content success explicitly ---
+        if (response.status === 204 || (response.status === 200 && method === 'DELETE')) {
+            return { success: true };
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.message || 'Action failed');
+            return null;
+        }
+
+        return await response.json();
+    } catch (err) {
+        console.error(err);
         return null;
     }
-
-    if (response.status === 204) {
-        return { success: true };
-    }
-
-    return response.json();
 }
 
 // --- Event Listeners ---
@@ -82,8 +99,15 @@ document.getElementById('login-form').onsubmit = async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    const rememberMe = document.getElementById('remember-me').checked;
     const data = await apiRequest('/login', 'POST', { email, password });
     if (data && data.token) {
+        // Save email to localStorage if checked
+        if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+        } else {
+            localStorage.removeItem('rememberedEmail');
+        }
         setCookie('authToken', data.token);
         checkAuth();
     }
@@ -93,23 +117,6 @@ document.getElementById('login-form').onsubmit = async (e) => {
 document.getElementById('logout-btn').onclick = () => {
     // 1. Clear the Auth Token
     deleteCookie('authToken');
-
-    // 2. Clear the input fields in the UI
-    const loginEmailInput = document.getElementById('login-email');
-    const loginPassInput = document.getElementById('login-password');
-    const savedEmail = localStorage.getItem('rememberedEmail');
-
-    // Always clear the password
-    loginPassInput.value = '';
-
-    // Only keep the email if "Remember Me" was used
-    if (savedEmail) {
-        loginEmailInput.value = savedEmail;
-    } else {
-        loginEmailInput.value = '';
-    }
-
-    // 3. Toggle the UI back to the login screen
     checkAuth();
 };
 
